@@ -1,0 +1,200 @@
+# Load PyTorch library
+!pip3 install torch
+
+import os
+import json
+import numpy as np
+import time
+import torch
+import uuid
+
+def set_seeds(seed, cuda):
+    """ Set Numpy and PyTorch seeds.
+    """
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if cuda:
+        torch.cuda.manual_seed_all(seed)
+    print ("==> 🌱 Set NumPy and PyTorch seeds.")
+    
+    ef generate_unique_id():
+    """Generate a unique uuid
+    preceded by a epochtime.
+    """
+    timestamp = int(time.time())
+    unique_id = "{}_{}".format(timestamp, uuid.uuid1())
+    print ("==> 🔑 Generated unique id: {0}".format(unique_id))
+    return unique_id
+
+def create_dirs(dirpath):
+    """Creating directories.
+    """
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath)
+        print ("==> 📂 Created {0}".format(dirpath))
+        
+        def check_cuda(cuda):
+    """Check to see if GPU is available.
+    """
+    if not torch.cuda.is_available():
+        cuda = False
+    device = torch.device("cuda" if cuda else "cpu")
+    print ("==> 💻 Device: {0}".format(device))
+    return device
+    
+    # Set seeds for reproducability
+set_seeds(seed=config["seed"], cuda=config["cuda"])
+
+==> 🌱 Set NumPy and PyTorch seeds.
+
+# Generate unique experiment ID
+config["experiment_id"] = generate_unique_id()
+
+==> 🔑 Generated unique id: 1546545495_e864de5c-0f91-11e9-9542-0242ac1c0002
+
+# Create experiment directory
+config["save_dir"] = os.path.join(config["save_dir"], config["experiment_id"])
+create_dirs(dirpath=config["save_dir"])
+
+==> 📂 Created experiments/1546545495_e864de5c-0f91-11e9-9542-0242ac1c0002
+
+# Expand file paths to store components later
+config["vectorizer_file"] = os.path.join(config["save_dir"], config["vectorizer_file"])
+config["model_file"] = os.path.join(config["save_dir"], config["model_file"])
+print ("Expanded filepaths: ")
+print ("{}".format(config["vectorizer_file"]))
+print ("{}".format(config["model_file"]))
+
+Expanded filepaths: 
+experiments/1546545495_e864de5c-0f91-11e9-9542-0242ac1c0002/vectorizer.json
+experiments/1546545495_e864de5c-0f91-11e9-9542-0242ac1c0002/model.pth
+
+# Save config
+config_fp = os.path.join(config["save_dir"], "config.json")
+with open(config_fp, "w") as fp:
+    json.dump(config, fp)
+    
+    # Check CUDA
+config["device"] = check_cuda(cuda=config["cuda"])
+
+==> 💻 Device: cuda
+
+import pandas as pd
+import urllib
+
+ef get_data(data_url, data_file):
+    """Get data from GitHub to notebook's
+    local drive.
+    """
+    # Create dataset directory
+    dirpath = os.path.dirname(data_file)
+    create_dirs(dirpath)
+    
+    # Fetch data
+    response = urllib.request.urlopen(config["data_url"])
+    html = response.read()
+    with open(config["data_file"], 'wb') as fp:
+        fp.write(html)
+    print ("==> 🐙 Downloading data from GitHub to {0}".format(data_file))
+    
+    def load_data(data_file):
+    """Load data from CSV to Pandas DataFrame.
+    """
+    # Load into DataFrame
+    df = pd.read_csv(data_file, header=0)
+    print ("==> 🍣 Raw data:")
+    print (df.head())
+    return df
+    
+    # Get data from GitHub
+get_data(data_url=config["data_url"], data_file=config["data_file"])
+
+==> 📂 Created datasets
+==> 🐙 Downloading data from GitHub to datasets/surnames.csv
+
+# Load data into Pandas DataFrame
+df = load_data(data_file=config["data_file"])
+
+==> 🍣 Raw data:
+    surname nationality
+0  Woodford     English
+1      Coté      French
+2      Kore     English
+3     Koury      Arabic
+4    Lebzak     Russian
+
+import collections
+
+def split_data(df, shuffle, train_size, val_size, test_size):
+    """Split the data into train/val/test splits.
+    """
+    # Split by category
+    by_category = collections.defaultdict(list)
+    for _, row in df.iterrows():
+        by_category[row.nationality].append(row.to_dict())
+    print ("\n==> 🛍️ Categories:")
+    for category in by_category:
+        print ("{0}: {1}".format(category, len(by_category[category])))
+
+    # Create split data
+    final_list = []
+    for _, item_list in sorted(by_category.items()):
+        if shuffle:
+            np.random.shuffle(item_list)
+        n = len(item_list)
+        n_train = int(train_size*n)
+        n_val = int(val_size*n)
+        n_test = int(test_size*n)
+
+      # Give data point a split attribute
+        for item in item_list[:n_train]:
+            item['split'] = 'train'
+        for item in item_list[n_train:n_train+n_val]:
+            item['split'] = 'val'
+        for item in item_list[n_train+n_val:]:
+            item['split'] = 'test'
+
+        # Add to final list
+        final_list.extend(item_list)
+
+    # df with split datasets
+    split_df = pd.DataFrame(final_list)
+    print ("\n==> 🖖 Splits:")
+    print (split_df["split"].value_counts())
+
+    return split_df
+    
+    # Split data
+split_df = split_data(
+    df=df, shuffle=config["shuffle"],
+    train_size=config["train_size"],
+    val_size=config["val_size"],
+    test_size=config["test_size"])
+    
+    ==> 🛍️ Categories:
+English: 2972
+French: 229
+Arabic: 1603
+Russian: 2373
+Japanese: 775
+Chinese: 220
+Italian: 600
+Czech: 414
+Irish: 183
+German: 576
+Greek: 156
+Spanish: 258
+Polish: 120
+Dutch: 236
+Vietnamese: 58
+Korean: 77
+Portuguese: 55
+Scottish: 75
+
+==> 🖖 Splits:
+train    7680
+test     1660
+al      1640
+Name: split, dtype: int64
+
+
