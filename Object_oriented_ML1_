@@ -1,0 +1,21 @@
+config = {
+  "seed": 1234,
+  "cuda": True,
+  "data_url": "https://raw.githubusercontent.com/GokuMohandas/practicalAI/master/data/surnames.csv",
+  "data_file": "datasets/surnames.csv",
+  "shuffle": True,
+  "train_size": 0.7,
+  "val_size": 0.15,
+  "test_size": 0.15,
+  "vectorizer_file": "vectorizer.json",
+  "model_file": "model.pth",
+  "save_dir": "experiments",
+  "num_epochs": 20,
+  "early_stopping_criteria": 5,
+  "learning_rate": 1e-3,
+  "batch_size": 128,
+  "fc": {
+    "hidden_dim": 300,
+    "dropout_p": 0.1
+  }
+}
